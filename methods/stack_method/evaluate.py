@@ -32,6 +32,8 @@ def binarize(image, threshold=128):
 # === PARAMÈTRES pour les masques issus de piles d'images===
 ground_truth_dir = r"C:\Users\PILLLARD-DOR\Documents\TEMPO\results_and_intermediate\stack_method\cropped_ground_truth"
 predicted_mask_dir = r"C:\Users\PILLLARD-DOR\Documents\TEMPO\results_and_intermediate\stack_method\automatic_segmentation"
+output_dir= r"C:\Users\PILLLARD-DOR\Documents\TEMPO\results_and_intermediate\stack_method\
+
 
 # Lister les fichiers de ground truth (on suppose qu’ils sont tous présents dans les deux dossiers)
 filenames = sorted([
@@ -79,4 +81,4 @@ for filename in filenames:
 df = pd.DataFrame(results)
 df.loc["MOYENNE"] = df.mean(numeric_only=True)
 print(df)
-df.to_csv(r"C:\Users\PILLLARD-DOR\Documents\TEMPO\results_and_intermediate\stack_method\results.csv",index=True)
+df.to_csv(os.path.join(output_dir, "results.csv"),index=True)
