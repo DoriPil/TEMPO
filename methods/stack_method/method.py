@@ -5,7 +5,6 @@ import skimage
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image
-import matplotlib.pyplot as plt
 from cellpose import plot, utils, io
 import cv2
 import utils as utl
@@ -19,16 +18,23 @@ def main():
     args=parser.parse_args()
     data_folder=args.dataPath
     results_folder=args.resultsPath
+    seg_stagiaire_folder=r'C:\Users\PILLLARD-DOR\Documents\GitHub\TEMPO\data\manual_annotations_independant'
 
-
+    print(data_folder)
+    # Read directories
     read_dir_name_sane=os.path.join(data_folder,r"multi_focus\raw\clean")
     read_dir_name_contaminated=os.path.join(data_folder,r"multi_focus\raw\contaminated")
     read_dir_manual_segmentation=os.path.join(data_folder,r'multi_focus\ground_truth')
+    read_dir_name_segmentation_stagiaires_raw=os.path.join(seg_stagiaire_folder,"raw")
+
+    # Save directories
     write_dir_manual_segmentation_cropped=os.path.join(results_folder,r'stack_method\cropped_ground_truth')
     write_dir_name_difference_brute=os.path.join(results_folder,r'stack_method\raw_difference')
     write_dir_name_difference_ouverte=os.path.join(results_folder,r'stack_method\intermediate_difference')
     #write_dir_name_image_intermédiaire=os.oath.join(data_folder,r'C:\Users\PILLLARD-DOR\Documents\scripts_thèse\images_qualite\benchmark_images\masque_intermédiaire_pile')
     write_dir_name_image_reconstruite=os.path.join(results_folder,r'stack_method\automatic_segmentation')
+    write_dir_name_segmentation_stagiaires_cropped=os.path.join(seg_stagiaire_folder,"cropped")
+    write_dir_name_image_clean_recalee=os.path.join(results_folder,r'stack_method\clean_recalee')
 
     images=os.listdir(read_dir_name_sane)
 
@@ -45,6 +51,7 @@ def main():
         save_path_manual_segmentation_cropped=os.path.join(write_dir_manual_segmentation_cropped,filename_png)
         #save_path_masque_intermédiaire=os.path.join(write_dir_name_image_intermédiaire,filename)
         save_path_masque_reconstruit=os.path.join(write_dir_name_image_reconstruite,filename)
+        
 
         save_path_difference_brute=save_path_difference_brute[:-4]
         save_path_difference_ouverte=save_path_difference_ouverte[:-4]
@@ -52,6 +59,7 @@ def main():
         save_path_masque_reconstruit=save_path_masque_reconstruit[:-4]
         save_path_masque_reconstruit=save_path_masque_reconstruit+".png"
         save_path_difference_ouverte=save_path_difference_ouverte+".png"
+        save_path_clean_recalee=os.path.join(write_dir_name_image_clean_recalee,filename_png)
 
         flag=True
         score=0
@@ -139,6 +147,10 @@ def main():
 
         img_contaminee_single=img_contaminee_stack[39,:,:]
         img_saine_single=img_saine_stack[index_retenu,:,:]
+
+        matplotlib.image.imsave(save_path_clean_recalee,img_saine_single,cmap='gray')
+
+
         manual_segmentation=plt.imread(path_segmentation_manuelle)
 
         # Estimation du déplacement X et Y par corrélation croisée

@@ -7,6 +7,21 @@ from sklearn.metrics import jaccard_score
 import skimage
 from scipy.spatial import distance
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def dice_coefficient(y_true, y_pred):
     """Calcul du coefficient de Dice"""
     intersection = np.sum(y_true * y_pred)

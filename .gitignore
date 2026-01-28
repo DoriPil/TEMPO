@@ -1,2 +1,7 @@
 methods/.DS_Store
 .DS_Store
+
+# Ignore all PNG and TIFF images
+*.png
+*.tif
+*.tiff

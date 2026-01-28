@@ -6,77 +6,113 @@ from skimage.io import imread
 from sklearn.metrics import jaccard_score
 import skimage
 from scipy.spatial import distance
-
-def dice_coefficient(y_true, y_pred):
-    """Calcul du coefficient de Dice"""
-    intersection = np.sum(y_true * y_pred)
-    return (2. * intersection) / (np.sum(y_true) + np.sum(y_pred) + 1e-8)
-
-def IoU(y_true,y_pred):
-    """Calcul du coefficient Intersection Over Union"""
-    intersection=np.sum(y_true*y_pred)
-    return (intersection/(np.sum(y_true)+np.sum(y_pred)-intersection)+1e-8)
-
-def binarize(image, threshold=128):
-    """Convertir une image en masque binaire (valeurs 0 ou 1)"""
-
-    image=image[:,:,0:3]
+import argparse
 
 
-    gray_image=skimage.color.rgb2gray(image)
 
-    thresh=skimage.filters.threshold_triangle(gray_image)
-    binary=gray_image>thresh
-    return binary.astype(np.uint8)
+def main():
+    
 
-# === PARAMÈTRES pour les masques issus de piles d'images===
-ground_truth_dir = r"C:\Users\PILLLARD-DOR\Documents\TEMPO\results_and_intermediate\compound_sharp_method\cropped_ground_truth"
-predicted_mask_dir = r"C:\Users\PILLLARD-DOR\Documents\TEMPO\results_and_intermediate\compound_sharp_method\automatic_segmentation"
+    # Parse arguments
+    parser=argparse.ArgumentParser()
+    parser.add_argument("--annotationPath",required=True)
+    parser.add_argument("--groundTruthPath",required=True)
+    parser.add_argument("--resultsPath",required=True)
+    args=parser.parse_args()
 
-# Lister les fichiers de ground truth (on suppose qu’ils sont tous présents dans les deux dossiers)
-filenames = sorted([
-    f for f in os.listdir(ground_truth_dir)
-    if f.lower().endswith(('.png', '.jpg', '.jpeg', '.tif'))
-])
 
-results = []
+    # Define support functions
+    def dice_coefficient(y_true,y_pred):
+        """Calcul du coefficient de Dice"""
+        intersection=np.sum(y_true*y_pred)
+        return (2.*intersection)/(np.sum(y_true)+np.sum(y_pred)+1e-8)
 
-for filename in filenames:
-    gt_path = os.path.join(ground_truth_dir, filename)
-    pred_path = os.path.join(predicted_mask_dir, filename)
+    def IoU(y_true,y_pred):
+        """Calcul du coefficient Intersection Over Union"""
+        intersection=np.sum(y_true*y_pred)
+        return (intersection/(np.sum(y_true)+np.sum(y_pred)-intersection)+1e-8)
 
-    if not os.path.exists(pred_path):
-        print(f"[AVERTISSEMENT] Masque prédit manquant pour {filename}")
-        continue
+    def binary_labeling(ground_truth):
+        binary_segmentation=(ground_truth[:,:,0]==68)*(ground_truth[:,:,1]==1)
+        return 1-binary_segmentation
 
-    # Charger l’image labellisée (ground truth)
-    gt_img = binarize(imread(gt_path))
+    def binarize_annotation(annotation):
+        channeled_annotation=annotation[:,:,0]
+        binary_annotation=channeled_annotation>0
+        return binary_annotation
 
-    pred_img = binarize(imread(pred_path))
-    plt.imshow(gt_img)
 
-    # Vérification des dimensions
-    if gt_img.shape != pred_img.shape:
-        print(f"[ERREUR] Dimensions différentes pour {filename}: GT {gt_img.shape}, préd {pred_img.shape}")
-        continue
+    # Read directories
+    ground_truth_folder=args.groundTruthPath
+    masks_folder=args.annotationPath
 
-    # Aplatir les images pour jaccard_score
-    gt_flat = gt_img.flatten()
-    pred_flat = pred_img.flatten()
+    masks_folder=os.path.join(masks_folder,r'alternate_filters\masks')
+    #masks_folder=os.path.join(masks_folder,r'h_maximas')
+    #masks_folder=os.path.join(masks_folder,r'reconstruction')
 
-    dice = dice_coefficient(gt_img, pred_img)
-    #jaccard = jaccard_score(gt_img, pred_img, average=None)
-    intersection_over_union=IoU(gt_img, pred_img)
 
-    results.append({
-        "Nom du fichier": filename,
-        "Dice": dice,
-    #    "Jaccard": jaccard
-        "Intersection over Union": intersection_over_union
-    })
 
-# Créer un DataFrame et afficher les résultats
-df = pd.DataFrame(results)
-df.loc["MOYENNE"] = df.mean(numeric_only=True)
-print(df)
-df.to_csv(r"C:\Users\PILLLARD-DOR\Documents\TEMPO\results_and_intermediate\compound_sharp_method\results.csv",index=True)
+    # Write directories
+    results_destination=args.resultsPath
+
+
+    # List files in folders
+    filenames=sorted([
+        f for f in os.listdir(ground_truth_folder)
+        if f.lower().endswith(('.png','.jpg','.jpeg','.tif'))
+    ])
+
+
+    results=[]
+
+
+    # Iterate over all images
+    for filename in filenames:
+
+
+        # Load images to be processed
+        ground_truth_path=os.path.join(ground_truth_folder,filename)
+        masks_path=os.path.join(masks_folder,filename)
+
+        ground_truth_image=imread(ground_truth_path)
+        mask_image=imread(masks_path)
+
+        
+        # Binarize mask and ground truth images
+        binary_ground_truth=binary_labeling(ground_truth_image)
+        binary_annotation=binarize_annotation(mask_image)
+
+
+        # Verify that images are same shape
+        if binary_ground_truth.shape != binary_annotation.shape:
+            print(f"[ERREUR] Dimensions différentes pour {filename}: GT {binary_ground_truth.shape}, préd {binary_annotation.shape}")
+            continue
+
+
+        # Flatten data for jaccard_score
+        ground_truth_flat=binary_ground_truth.flatten()
+        annotation_flat=binary_annotation.flatten()
+
+
+        # Compute performances according to metrics
+        dice=dice_coefficient(binary_ground_truth,binary_annotation)
+        intersection_over_union=IoU(binary_ground_truth,binary_annotation)
+
+
+        # Fill results array
+        results.append({
+            "Filename": filename,
+            "Dice": dice,
+            "Intersection Over Union": intersection_over_union
+        })
+        
+
+        # Create Dataframe and show results
+        df=pd.DataFrame(results)
+        df.loc["MOYENNE"]=df.mean(numeric_only=True)
+        print(df)
+        df.to_csv(os.path.join(results_destination,"results.csv"),sep=';',index=True)
+
+
+if __name__=="__main__":
+    main()
