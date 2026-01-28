@@ -4,7 +4,7 @@ import argparse
 import os
 
 # Path to data and results folders
-benchmark_folder=r"C:\Users\PILLLARD-DOR\Documents\benchmark_data" # Modifier ce chemin pour rendre compatible avec votre machine
+benchmark_folder=r"C:\Users\PILLLARD-DOR\Documents\GitHub\TEMPO" # Modifier ce chemin pour rendre compatible avec votre machine
 data_folder=os.path.join(benchmark_folder,'data')
 results_folder=os.path.join(benchmark_folder,'results')
 
@@ -20,17 +20,17 @@ run_sharp_method=True
 # Compute masks using the best focused images
 if run_best_focus_method:
     subprocess.run([sys.executable,
-                    r'C:\Users\PILLLARD-DOR\Documents\GitHub\TEMPO\methods\best_focus_method\method.py',
+                    os.path.join(benchmark_folder,r'methods\best_focus_method\method.py'),
                     "--dataPath",data_folder,
                     "--resultsPath",results_folder,
                     "--alternateFiltersDepth",str(alternate_filters_depth),
                     "--h_maximas",str(h_maximas),
                     "--reconstruct",str(reconstruct)])
     
-# Compute masks using all-in-one focus iamges
+# Compute masks using all-in-one focus iamges (compound sharp images)
 if run_sharp_method:
     subprocess.run([sys.executable,
-                    r'C:\Users\PILLLARD-DOR\Documents\GitHub\TEMPO\methods\compound_sharp_method\method.py',
+                    os.path.join(benchmark_folder,r'methods\compound_sharp_method\method.py'),
                     "--dataPath",data_folder,
                     "--resultsPath",results_folder,
                     "--alternateFiltersDepth",str(alternate_filters_depth),
@@ -38,15 +38,6 @@ if run_sharp_method:
                     "--reconstruct",str(reconstruct)]) 
 
 
-#subprocess.run([sys.executable, 
- #               r"C:\Users\PILLLARD-DOR\Documents\GitHub\TEMPO\methods\stack_method\method.py",
- #               "--dataPath",data_folder,
- #               "--resultsPath",results_folder])
-
-#    subprocess.run([sys.executable,
-#                    r"C:\Users\PILLLARD-DOR\Documents\GitHub\TEMPO\methods\compound_sharp_method\method.py",
-#                    "--dataPath",data_folder,
-#                    "--resultsPath",results_folder])
 
 #    subprocess.run([sys.executable, 
 #                    r"C:\Users\PILLLARD-DOR\Documents\GitHub\TEMPO\methods\depth_map_method\method.py",
