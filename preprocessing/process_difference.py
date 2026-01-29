@@ -25,7 +25,8 @@ def main():
 
 
     # Write directories
-    difference_folder=os.path.join(results_folder,r'best_focus_method\raw_difference')
+    raw_difference_folder=os.path.join(results_folder,r'best_focus_method\raw_difference')
+    ssim_difference_folder=os.path.join(results_folder,r'best_focus_method\ssim_difference')
     best_focus_images_folder_clean=os.path.join(data_folder,r'multi_focus\best_focus\clean')
     best_focus_images_folder_contaminated=os.path.join(data_folder,r'multi_focus\best_focus\contaminated')
     registered_ground_truth_folder=os.path.join(results_folder,r'best_focus_method\registered_ground_truth')
@@ -35,7 +36,11 @@ def main():
 
 
     # Read image names in folder
-    images=os.listdir(data_folder_clean)
+    images=[
+        f for f in os.listdir(data_folder_clean)
+        if f.lower().endswith(".tif")
+        and os.path.isfile(os.path.join(data_folder_clean,f))
+    ]
 
 
     # Iterate over all images
@@ -198,6 +203,12 @@ def main():
         registered_image_contaminated=image_contaminated_best_focus[ah0:ah1,aw0:aw1]
         registered_ground_truth=ground_truth[ah0:ah1,aw0:aw1,:]
 
+        # Compute and save raw difference between registered images
+        raw_difference=registered_image_clean-registered_image_contaminated
+        raw_difference=abs(raw_difference)
+        path_raw_difference=os.path.join(raw_difference_folder,filename)
+        matplotlib.image.imsave(path_raw_difference[:-4]+'.png',raw_difference,cmap='gray')
+
         # Save registered ground truth
         path_registered_ground_truth=os.path.join(registered_ground_truth_folder,filename)
         matplotlib.image.imsave(path_registered_ground_truth[:-4]+'.png',registered_ground_truth)
@@ -228,8 +239,8 @@ def main():
         # Save difference image and registered best focus images
         path_registered_clean_focus=os.path.join(registered_best_focus_clean_folder,filename)
         path_registered_contaminated_focus=os.path.join(registered_best_focus_contaminated_folder,filename)
-        path_difference=os.path.join(difference_folder,filename)
-        matplotlib.image.imsave(path_difference[:-4]+'.png',difference,cmap='gray')
+        path_ssim_difference=os.path.join(ssim_difference_folder,filename)
+        matplotlib.image.imsave(path_ssim_difference[:-4]+'.png',difference,cmap='gray')
         matplotlib.image.imsave(path_registered_clean_focus[:-4]+'.png',registered_image_clean,cmap='gray')
         matplotlib.image.imsave(path_registered_contaminated_focus[:-4]+'.png',registered_image_contaminated,cmap='gray')
 

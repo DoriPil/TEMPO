@@ -27,13 +27,18 @@ def main():
     # Write directories
     sharp_folder_clean=os.path.join(results_folder,r'all_in_focus_method\clean')
     sharp_folder_contaminated=os.path.join(results_folder,r'all_in_focus_method\contaminated')
-    sharp_image_difference_folder=os.path.join(results_folder,r'all_in_focus_method\raw_difference')
+    raw_difference_folder=os.path.join(results_folder,r'all_in_focus_method\raw_difference')
+    ssim_difference_folder=os.path.join(results_folder,r'all_in_focus_method\ssim_difference')
     registered_ground_truth_folder=os.path.join(results_folder,r'all_in_focus_method\registered_ground_truth')
     binary_masks=os.path.join(results_folder,r'all_in_focus_method\binary_masks')
-
+    
 
     # Read image names in folder
-    Z_stacks=os.listdir(data_folder_clean)
+    Z_stacks=[
+        f for f in os.listdir(data_folder_clean)
+        if f.lower().endswith(".tif")
+        and os.path.isfile(os.path.join(data_folder_clean,f))
+    ]
 
     # Iterate over all images
     for filename in Z_stacks:
@@ -127,6 +132,11 @@ def main():
         registered_focused_contaminated=in_focus_contaminated[ah0:ah1,aw0:aw1]
         registered_ground_truth=ground_truth[ah0:ah1,aw0:aw1,:]
 
+        # Compute and save raw difference images
+        raw_difference=registered_focused_clean-registered_focused_contaminated
+        raw_difference=abs(raw_difference)
+        path_raw_difference=os.path.join(raw_difference_folder,filename)
+        matplotlib.image.imsave(path_raw_difference[:-4]+'.png',raw_difference,cmap='gray')
 
         # Save registered ground truth
         path_registered_ground_truth=os.path.join(registered_ground_truth_folder,filename)
@@ -162,7 +172,7 @@ def main():
 
 
         # Save difference and binary images
-        path_difference=os.path.join(sharp_image_difference_folder,filename)
+        path_difference=os.path.join(ssim_difference_folder,filename)
         path_binary_mask=os.path.join(binary_masks,filename)
         matplotlib.image.imsave(path_difference[:-4]+'.png',difference,cmap='gray')
         matplotlib.image.imsave(path_binary_mask[:-4]+'.png',binary_mask,cmap='gray')

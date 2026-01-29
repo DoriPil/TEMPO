@@ -9,12 +9,13 @@ data_folder=os.path.join(benchmark_folder,'data')
 results_folder=os.path.join(benchmark_folder,'results')
 
 # Define parameters for methods to apply
-alternate_filters_depth=5
-h_maximas=10
-reconstruct=True
+alternate_filters_depth=0
+h_maximas=0
+reconstruct=False
+threshold_type="all" # Threshold arguments accepted: triangle, otsu, all or None
 
 # Booleans for choosing which methods to benchmark
-run_best_focus_method=True
+run_best_focus_method=False
 run_sharp_method=True
 
 # Compute masks using the best focused images
@@ -25,7 +26,8 @@ if run_best_focus_method:
                     "--resultsPath",results_folder,
                     "--alternateFiltersDepth",str(alternate_filters_depth),
                     "--h_maximas",str(h_maximas),
-                    "--reconstruct",str(reconstruct)])
+                    "--reconstruct",str(reconstruct),
+                    "--thresholdOnly",threshold_type])
     
 # Compute masks using all-in-one focus iamges (compound sharp images)
 if run_sharp_method:
@@ -35,7 +37,8 @@ if run_sharp_method:
                     "--resultsPath",results_folder,
                     "--alternateFiltersDepth",str(alternate_filters_depth),
                     "--h_maximas",str(h_maximas),
-                    "--reconstruct",str(reconstruct)]) 
+                    "--reconstruct",str(reconstruct),
+                    "--thresholdType",threshold_type])
 
 
 

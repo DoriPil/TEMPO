@@ -16,6 +16,7 @@ def main():
     parser.add_argument("--alternateFiltersDepth",type=int,required=True)
     parser.add_argument("--h_maximas",type=int,required=True)
     parser.add_argument("--reconstruct",type=bool,required=True)
+    parser.add_argument("--thresholdType",required=True)
     args=parser.parse_args()
     
     data_folder=args.dataPath
@@ -23,11 +24,12 @@ def main():
     alternate_filter_depth=args.alternateFiltersDepth
     h_maximas=args.h_maximas
     reconstruct=args.reconstruct
+    threshold_type=args.thresholdType
 
 
     # Read directories
-    difference_folder=os.path.join(results_folder,r'all_in_focus_method\raw_difference')
-
+    raw_difference_folder=os.path.join(results_folder,r'all_in_focus_method\raw_difference')
+    ssim_difference_folder=os.path.join(results_folder,r'all_in_focus_method\ssim_difference')
 
     # Write directories
     automatic_segmentation_folder_alternate_filters=os.path.join(results_folder,r"all_in_focus_method\automatic_segmentation\alternate_filters\masks")
@@ -42,21 +44,29 @@ def main():
 
     
     # Read image names in folder
-    images=os.listdir(difference_folder)
+    images=[
+        f for f in os.listdir(raw_difference_folder)
+        if f.lower().endswith(".png")
+        and os.path.isfile(os.path.join(raw_difference_folder,f))
+    ]
 
 
     # Iterate over all images
     for filename in images:
 
         # Load images to be processed
-        path_raw_difference_images=os.path.join(difference_folder,filename)
-        difference=skimage.io.imread(path_raw_difference_images)
-        difference=difference.astype(float)
+        path_raw_difference_images=os.path.join(raw_difference_folder,filename)
+        raw_difference=skimage.io.imread(path_raw_difference_images)
+        raw_difference=raw_difference.astype(float)
 
+        path_ssim_difference_images=os.path.join(ssim_difference_folder,filename)
+        ssim_difference=skimage.io.imread(path_ssim_difference_images)
+        ssim_difference=ssim_difference.astype(float)
 
         # Extract grayscale image from 4-channel RGBA image
-        difference=difference[:,:,0]
-                              
+        raw_difference=raw_difference[:,:,0]
+        ssim_difference=ssim_difference[:,:,0]
+        difference=ssim_difference
 
         
         # Open difference to get rid of "constellation noise"
@@ -69,6 +79,40 @@ def main():
         #opened_difference=skimage.morphology.area_opening(difference,500)
         #closed_difference=skimage.morphology.closing(opened_difference,skimage.morphology.disk(4))
         #closed_difference=opened_difference
+
+        # Simple thresholding
+        if threshold_type!="None":
+            print("trying to apply thresholds!")
+            if (threshold_type=="triangle") or (threshold_type=="all"):
+                print('Applying triangle threshold!')
+                threshold_raw=skimage.filters.threshold_triangle(raw_difference)
+                threshold_ssim=skimage.filters.threshold_triangle(ssim_difference)
+                raw_difference_mask=raw_difference>threshold_raw
+                ssim_difference_mask=ssim_difference>threshold_ssim
+
+                # Save images in appropriate folders
+                raw_difference_mask_folder=os.path.join(results_folder,r'all_in_focus_method\automatic_segmentation\thresholds\raw_difference\triangle_threshold')
+                ssim_difference_mask_folder=os.path.join(results_folder,r'all_in_focus_method\automatic_segmentation\thresholds\ssim_difference\triangle_threshold')
+                path_raw_difference_mask=os.path.join(raw_difference_mask_folder,filename)
+                path_ssim_difference_mask=os.path.join(ssim_difference_mask_folder,filename)
+                matplotlib.image.imsave(path_raw_difference_mask,raw_difference_mask,cmap='gray')
+                matplotlib.image.imsave(path_ssim_difference_mask,ssim_difference_mask,cmap='gray')
+
+            if (threshold_type=="otsu") or (threshold_type=="all"):
+                print('Applying Otsu threshold!')
+                threshold_raw=skimage.filters.threshold_otsu(raw_difference)
+                threshold_ssim=skimage.filters.threshold_otsu(ssim_difference)
+                raw_difference_mask=raw_difference>threshold_raw
+                ssim_difference_mask=ssim_difference>threshold_ssim
+
+                # Save images in appropriate folders
+                raw_difference_mask_folder=os.path.join(results_folder,r'all_in_focus_method\automatic_segmentation\thresholds\raw_difference\otsu_threshold')
+                ssim_difference_mask_folder=os.path.join(results_folder,r'all_in_focus_method\automatic_segmentation\thresholds\ssim_difference\otsu_threshold')
+                path_raw_difference_mask=os.path.join(raw_difference_mask_folder,filename)
+                path_ssim_difference_mask=os.path.join(ssim_difference_mask_folder,filename)
+                matplotlib.image.imsave(path_raw_difference_mask,raw_difference_mask,cmap='gray')
+                matplotlib.image.imsave(path_ssim_difference_mask,ssim_difference_mask,cmap='gray')
+        
 
         # Alternate filtering method
 
