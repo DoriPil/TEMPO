@@ -15,7 +15,7 @@ def main():
     parser.add_argument("--resultsPath",required=True)
     parser.add_argument("--alternateFiltersDepth",type=int,required=True)
     parser.add_argument("--h_maximas",type=int,required=True)
-    parser.add_argument("--reconstruct",type=bool,required=True)
+    parser.add_argument("--reconstruct",required=True)
     parser.add_argument("--thresholdType",required=True)
     args=parser.parse_args()
     
@@ -23,7 +23,7 @@ def main():
     results_folder=args.resultsPath
     alternate_filter_depth=args.alternateFiltersDepth
     h_maximas=args.h_maximas
-    reconstruct=args.reconstruct
+    reconstruct=args.reconstruct.lower()=='true'
     threshold_type=args.thresholdType
 
 
@@ -164,7 +164,7 @@ def main():
             # Combining H_maximas and alternate filtering method
 
         # Reconstruction of opened difference under raw difference
-
+        print('Value of reconstruct = ' + str(reconstruct))
         if reconstruct:
             opened_difference=skimage.morphology.opening(difference,skimage.morphology.disk(5))
             opened_difference=skimage.morphology.area_opening(difference,500)

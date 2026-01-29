@@ -15,9 +15,8 @@ def main():
 
     # Parse arguments
     parser=argparse.ArgumentParser()
-    parser.add_argument("--annotationPath",required=True)
-    parser.add_argument("--groundTruthPath",required=True)
     parser.add_argument("--resultsPath",required=True)
+    parser.add_argument("--algorithm",required=True)
     args=parser.parse_args()
 
 
@@ -43,17 +42,25 @@ def main():
 
 
     # Read directories
-    ground_truth_folder=args.groundTruthPath
-    masks_folder=args.annotationPath
+    method_folder=os.path.join(args.resultsPath,r'all_in_focus_method')
+    method_to_evaluate=args.algorithm
 
-    masks_folder=os.path.join(masks_folder,r'alternate_filters\masks')
+    
+    results_folder=os.path.join(method_folder,r'automatic_segmentation')
+    ground_truth_folder=os.path.join(method_folder,'registered_ground_truth')
+
+    if method_to_evaluate=="raw_difference":
+        masks_folder=os.path.join(results_folder,r'thresholds\raw_difference\triangle_threshold') # Changer 'otsu' en 'triangle' pour évaluer le seuillage triangle (changement pour rendre ça automatique/avec des arguments à venir)
+    elif method_to_evaluate=="ssim_difference":
+        masks_folder=os.path.join(results_folder,r'thresholds\ssim_difference\triangle_threshold')
+
     #masks_folder=os.path.join(masks_folder,r'h_maximas')
     #masks_folder=os.path.join(masks_folder,r'reconstruction')
 
 
 
     # Write directories
-    results_destination=args.resultsPath
+    results_destination=masks_folder
 
 
     # List files in folders

@@ -163,29 +163,11 @@ def main():
         # Aggregate and suppress pixel noise
         difference=ndimage.median_filter(difference,size=5)
 
-
-        # Thresholding attempt
-        mu=np.mean(difference)
-        sigma=np.std(difference)
-
-        binary_mask=difference>(mu+3*sigma)
-
-
         # Save difference and binary images
         path_difference=os.path.join(ssim_difference_folder,filename)
-        path_binary_mask=os.path.join(binary_masks,filename)
         matplotlib.image.imsave(path_difference[:-4]+'.png',difference,cmap='gray')
-        matplotlib.image.imsave(path_binary_mask[:-4]+'.png',binary_mask,cmap='gray')
 
         print("Saved image to " + path_difference[:-4]+'.png')
-
-
-
-
-
-        
-        
-
 
 
 if __name__=="__main__":

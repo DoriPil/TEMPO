@@ -9,10 +9,10 @@ data_folder=os.path.join(benchmark_folder,'data')
 results_folder=os.path.join(benchmark_folder,'results')
 
 # Define parameters for methods to apply
-alternate_filters_depth=0
+alternate_filters_depth=5
 h_maximas=0
 reconstruct=False
-threshold_type="all" # Threshold arguments accepted: triangle, otsu, all or None
+threshold_type="None" # Threshold arguments accepted: triangle, otsu, all or None
 
 # Booleans for choosing which methods to benchmark
 run_best_focus_method=False
